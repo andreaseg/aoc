@@ -1,0 +1,71 @@
+format PE console
+
+entry start
+
+include 'win32a.inc'
+
+section '.idata' data readable import
+        library kernel32, 'kernel32.dll', \
+                msvcrt,   'msvcrt.dll'
+        import kernel32,\
+               ExitProcess, 'ExitProcess'
+        import msvcrt,\
+               printf, 'printf',\
+               getchar, 'getchar'
+
+section '.data' data readable writeable
+
+strfmt db '%d',10,0
+errfmt db 'Invalid symbol %c',10,0
+acc dd 0
+
+section '.code' code executable readable writeable
+
+start:
+
+iter:
+  ; Call getchar and finish if EOF
+  call [getchar]
+  mov ebx, eax
+  cmp ebx, -1
+  je finish
+
+  ; Check if symbol is '(' or ')'
+  cmp bl, '('
+  je accadd
+  cmp bl, ')'
+  je accsub
+
+  ; Chick if lineend
+  cmp bl, 10
+  je finish
+
+  ; Print error message on unexpected input
+  push ebx
+  push errfmt
+  call [printf]
+
+  ; Exit with error
+  push -1
+  call [ExitProcess]
+
+accadd:
+  ; Increment accumulator
+  add [acc], 1
+  jmp iter
+
+accsub:
+  ; Decrement accumulator
+  sub [acc], 1
+  jmp iter
+
+finish:
+  ; Print results
+  mov eax, [acc]
+  push eax
+  push strfmt
+  call [printf]
+
+  ; Exit with success
+  push 0
+  call [ExitProcess]
