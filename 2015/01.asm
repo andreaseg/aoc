@@ -18,6 +18,8 @@ section '.data' data readable writeable
 strfmt db '%d',10,0
 errfmt db 'Invalid symbol %c',10,0
 acc dd 0
+bas dd 0
+index dd 0
 
 section '.code' code executable readable writeable
 
@@ -29,6 +31,7 @@ iter:
   mov ebx, eax
   cmp ebx, -1
   je finish
+  add [index], 1
 
   ; Check if symbol is '(' or ')'
   cmp bl, '('
@@ -57,11 +60,25 @@ accadd:
 accsub:
   ; Decrement accumulator
   sub [acc], 1
+  cmp [acc], -1
+  je setbas
+  jmp iter
+
+setbas:
+  cmp [bas], 0
+  jne iter
+  mov eax, [index]
+  mov [bas], eax
   jmp iter
 
 finish:
   ; Print results
   mov eax, [acc]
+  push eax
+  push strfmt
+  call [printf]
+
+  mov eax, [bas]
   push eax
   push strfmt
   call [printf]
