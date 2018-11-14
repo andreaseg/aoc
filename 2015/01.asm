@@ -15,7 +15,8 @@ section '.idata' data readable import
 
 section '.data' data readable writeable
 
-strfmt db '%d',10,0
+accfmt db 'Curent floor %d',10,0
+basfmt db 'First time entered basement %d',10,0
 errfmt db 'Invalid symbol %c',10,0
 acc dd 0
 bas dd 0
@@ -25,22 +26,32 @@ section '.code' code executable readable writeable
 
 start:
 
-iter:
+.iter:
   ; Call getchar and finish if EOF
   call [getchar]
   cmp eax, -1
-  je finish
+  je .finish
   add [index], 1
 
-  ; Check if symbol is '(' or ')'
+  ; Check if symbol is '('
   cmp al, '('
-  je accadd
-  cmp al, ')'
-  je accsub
+  jne @f
+  inc [acc]
+  jmp .iter
+  @@:
 
-  ; Chick if lineend
+  ; Check if symbols is ')'
+  cmp al, ')'
+  jne @f
+  dec [acc]
+  cmp [acc], -1
+  je .setbas
+  jmp .iter
+  @@:
+
+  ; Check if lineend
   cmp al, 10
-  je finish
+  je .finish
 
   ; Print error message on unexpected input
   push eax
@@ -51,36 +62,24 @@ iter:
   push -1
   call [ExitProcess]
 
-accadd:
-  ; Increment accumulator
-  add [acc], 1
-  jmp iter
-
-accsub:
-  ; Decrement accumulator
-  sub [acc], 1
-  cmp [acc], -1
-  je setbas
-  jmp iter
-
-setbas:
+.setbas:
   ; Set bas to value of index if bas equals zero
   cmp [bas], 0
-  jne iter
+  jne .iter
   mov eax, [index]
   mov [bas], eax
-  jmp iter
+  jmp .iter
 
-finish:
+.finish:
   ; Print results
   mov eax, [acc]
   push eax
-  push strfmt
+  push accfmt
   call [printf]
 
   mov eax, [bas]
   push eax
-  push strfmt
+  push basfmt
   call [printf]
 
   ; Exit with success
