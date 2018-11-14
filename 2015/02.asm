@@ -51,11 +51,12 @@ readnum:
         push ebx
         jmp @b
 .finish:
-        ; Return results in eax
+        ; Return results in eax, with success code
         pop eax
+        mov ebx, 0
         ret
 .eof:
-        ; Retuns error code -1
+        ; Return results in eax, with error code -1
         pop eax
         mov ebx, -1
         ret
