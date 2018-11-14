@@ -16,9 +16,10 @@ section '.idata' data readable import
 section '.data' data readable writeable
 
 strfmt db 'Wrapping paper needed %d',10,0
+ribfmt db 'Ribbon needed %d',10,0
 errfmt db 'Invalid symbol %c',10,0
-error dd 0
 sum dd 0
+rib dd 0
 l dd 0
 w dd 0
 h dd 0
@@ -26,7 +27,8 @@ h dd 0
 section '.code' code executable readable writeable
 
 readnum:
-        ; Reads number until newline, eof or 'x' is encountered
+        ; Reads number until newline, eof or 'x' is encountered.
+        ; Places the number into eax and any errors into ebx
         push 0
         @@:
         call [getchar]
@@ -55,13 +57,27 @@ readnum:
 .eof:
         ; Retuns error code -1
         pop eax
-        mov [error], -1
+        mov ebx, -1
+        ret
+
+min:
+        ; finds the smallest value in the eax, ebx, ecx
+        ; registers and places it into edx
+        mov edx, eax
+        cmp edx, ebx
+        jle @f
+        mov edx, ebx
+        @@:
+        cmp edx, ecx
+        jle @f
+        mov edx, ecx
+        @@:
         ret
 
 start:
         ; Read three numbers
         call readnum
-        cmp [error], -1
+        cmp ebx, -1
         je .finish
         mov [l], eax
         call readnum
@@ -81,16 +97,7 @@ start:
         mov ecx, [h]
         imul ecx, [l]
 
-        ; edx = min(eax, ebx, ecx)
-        mov edx, eax
-        cmp edx, ebx
-        jle @f
-        mov edx, ebx
-        @@:
-        cmp edx, ecx
-        jle @f
-        mov edx, ecx
-        @@:
+        call min
 
         ; sum += edx + 2*(eax + ebx + ecx)
         add eax, ebx
@@ -98,6 +105,28 @@ start:
         shl eax, 1
         add eax, edx
         add [sum], eax
+
+        ; eax = l + h
+        mov eax, [l]
+        add eax, [w]
+
+        ; ebx = w + h
+        mov ebx, [w]
+        add ebx, [h]
+
+        ; ecx = h + l
+        mov ecx, [h]
+        add ecx, [l]
+
+        call min
+
+        ; rib += 2*edx + [l] * [h] * [w]
+        shl edx, 1
+        add [rib], edx
+        mov edx, [l]
+        imul edx, [h]
+        imul edx, [w]
+        add [rib], edx
 
         ; Get next line
         jmp start
@@ -107,4 +136,9 @@ start:
         mov eax, [sum]
         push eax
         push strfmt
+        call [printf]
+
+        mov eax, [rib]
+        push eax
+        push ribfmt
         call [printf]
