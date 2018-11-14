@@ -64,6 +64,7 @@ accsub:
   jmp iter
 
 setbas:
+  ; Set bas to value of index if bas equals zero
   cmp [bas], 0
   jne iter
   mov eax, [index]
