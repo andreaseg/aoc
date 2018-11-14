@@ -28,23 +28,22 @@ start:
 iter:
   ; Call getchar and finish if EOF
   call [getchar]
-  mov ebx, eax
-  cmp ebx, -1
+  cmp eax, -1
   je finish
   add [index], 1
 
   ; Check if symbol is '(' or ')'
-  cmp bl, '('
+  cmp al, '('
   je accadd
-  cmp bl, ')'
+  cmp al, ')'
   je accsub
 
   ; Chick if lineend
-  cmp bl, 10
+  cmp al, 10
   je finish
 
   ; Print error message on unexpected input
-  push ebx
+  push eax
   push errfmt
   call [printf]
 
