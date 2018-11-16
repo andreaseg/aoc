@@ -18,8 +18,8 @@ section '.idata' data readable import
 
 section '.data' data readable writeable
 
-visfmt db 'Houses visited %d',10,0
-allfmt db 'Allocated heap at 0x%hhx - 0x%hhx (%d Bytes)',10,0
+errfmt db 'Error reallocation',0
+visfmt db 'Houses visited %d',0
 x dw 0
 y dw 0
 list dd 0
@@ -36,8 +36,8 @@ visit:
 
 .iter:
         ; Check if within list bounds
-        cmp [listend], ecx
-        jle .oob
+        cmp ecx, [listend]
+        jge .oob
 
         ; Check if x-coordinate is equal
         mov ah, [ecx]
@@ -60,13 +60,15 @@ visit:
         mov ebx, [listend]
         sub ebx, [list]
         cmp ebx, [reserved]
-        jle @f
+        jl @f
 
         ; Realloc
         add [reserved], 400
-        push [reserved]
+        push reserved
         push [list]
         call [realloc]
+        cmp eax, 0
+        je .error
 
         ; Update heap pointer
         mov ebx, [listend]
@@ -75,11 +77,6 @@ visit:
         mov [listend], eax
         add [listend], ebx
 
-        push [reserved]
-        push [listend]
-        push [list]
-        push allfmt
-        call [printf]
         @@:
 
         ; Write value to end of list
@@ -95,6 +92,12 @@ visit:
 .finish:
         ret
 
+.error:
+        push errfmt
+        call [printf]
+        push -1
+        call [ExitProcess]
+
 start:
         ; Setup list of houses
         push [reserved]
@@ -102,11 +105,6 @@ start:
         mov [list], eax
         mov [listend], eax
 
-        push [reserved]
-        push [listend]
-        push [list]
-        push allfmt
-        call [printf]
 .read:
         ; Visit current house
         call visit
@@ -148,3 +146,6 @@ start:
         ; Free list
         push [list]
         call [free]
+
+        push 0
+        call [ExitProcess]
