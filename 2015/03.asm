@@ -177,6 +177,7 @@ start:
         ; Free list
         push [list]
         call [free]
+        pop ebx
 
         ; Exit with success
         push 0

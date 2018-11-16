@@ -138,11 +138,13 @@ start:
         push eax
         push strfmt
         call [printf]
+        add esp, 8
 
         mov eax, [rib]
         push eax
         push ribfmt
         call [printf]
+        add esp, 8
 
         push 0
         call [ExitProcess]
