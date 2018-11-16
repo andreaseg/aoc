@@ -143,3 +143,6 @@ start:
         push eax
         push ribfmt
         call [printf]
+
+        push 0
+        call [ExitProcess]
