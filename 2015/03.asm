@@ -23,6 +23,8 @@ errfmt db 'Error reallocating memory',0
 visfmt db 'Houses visited %d',0
 x dw 0
 y dw 0
+x2 dw 0
+y2 dw 0
 list dd 0
 listend dd 0
 reserved dd 256
@@ -34,6 +36,14 @@ visit:
 
         ; Get reference to start of heap allocated list
         mov ecx, [list]
+
+        ; Swap robot and santa (for part two)
+        mov ax, [x]
+        xchg ax, [x2]
+        mov [x], ax
+        mov ax, [y]
+        xchg ax, [y2]
+        mov [y], ax
 
 .iter:
         ; Check if within list bounds
@@ -151,6 +161,9 @@ start:
         dec [y]
         jmp .read
         @@:
+
+        ; Visit final house
+        call visit
 
         ; Print results
         mov eax, [listend]
