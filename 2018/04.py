@@ -35,6 +35,30 @@ def part1(guard_events):
 
     print("Sleepiest guard is %i, slept for a total of %i minutes, answer is %i" % (guard_id, asleep, (guard_id * sleepiest_time)))
 
+def part2(guard_events):
+    guard_dict = dict()
+
+    time = 0
+    current_guard_id = -1
+    for event in guard_events:
+        if event.event_type == GuardEventType.BEGIN:
+            current_guard_id = event.guard_id
+            if current_guard_id not in guard_dict:
+                guard_dict[current_guard_id] = 60*[0]
+            time = event.get_minute()
+        elif event.event_type == GuardEventType.WAKE_UP:
+            for t in range(time, event.get_minute()):
+                guard_dict[current_guard_id][t] += 1
+        elif event.event_type == GuardEventType.FALL_ASLEEP:
+            time = event.get_minute()
+        else:
+            raise ValueError('Invalid event type')
+    (guard_id, asleep_times) = max(guard_dict.items(), key = lambda tup: max(tup[1]))
+    sleepiest_time = argmax(asleep_times)
+
+    print("Sleepiest guard is %i, slept most at time %i, answer is %i" % (guard_id, sleepiest_time, (guard_id * sleepiest_time)))
+
+
 def argmax(list):
     return max(range(len(list)), key=lambda i:list[i])
 
@@ -84,7 +108,10 @@ def parse_events(event_list):
 
 def main():
     events = parse_events(sys.stdin.readlines())
+    print("Part 1")
     part1(events)
+    print("Part 2")
+    part2(events)
 
 if __name__ == '__main__':
     main()
