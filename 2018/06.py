@@ -58,7 +58,50 @@ def part1(coords):
     areas[0] = 0
 
     print("Largest area is %i" % max(areas))
+    
+def is_safe(coords, x, y):
+    acc = 0
+    for coord in coords:
+        acc += abs(coord[0] - x)
+        acc += abs(coord[1] - y)
 
+    return acc < 10000
+
+def part2(coords):
+    width = max(coords, key = lambda tup: tup[0])[0] + 1
+    height = max(coords, key = lambda tup: tup[1])[1] + 1
+    places = [[0 for x in range(height)] for y in range(width)]
+    current_id = 0
+    max_area = 0
+    for x in range(width):
+        for y in range(height):
+            if places[x][y] != 0:
+                continue
+            if not is_safe(coords, x, y):
+                continue
+            dq = deque([(x, y)])
+            current_id += 1
+            places[x][y] = current_id
+            current_area = 1
+            while dq:
+                coord = dq.popleft()
+                new_coords = []
+                if coord[0] > 0:
+                    new_coords.append((coord[0] - 1, coord[1]))
+                if coord[1] > 0:
+                    new_coords.append((coord[0], coord[1] - 1))
+                if coord[0] < width - 1:
+                    new_coords.append((coord[0] + 1, coord[1]))
+                if coord[1] < height - 1:
+                    new_coords.append((coord[0], coord[1] + 1))
+                for new_coord in new_coords:
+                    if places[new_coord[0]][new_coord[1]] == 0 and is_safe(coords, new_coord[0], new_coord[1]):
+                        places[new_coord[0]][new_coord[1]] = current_id
+                        dq.append(new_coord)
+                        current_area += 1
+            max_area = max(max_area, current_area)
+
+    print("Largest area is %i" % max_area)
 
 def main():
     co_reg = re.compile(r'(\d+),\s(\d+)')
@@ -68,7 +111,10 @@ def main():
         x = int(matches.group(1))
         y = int(matches.group(2))
         coords.append((x, y))
+    print("Part 1")
     part1(coords)
+    print("Part 2")
+    part2(coords)
 
 if __name__ == '__main__':
     main()
