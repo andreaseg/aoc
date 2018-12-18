@@ -3,3 +3,6 @@
 *.obj
 *.bc
 *.input
+*.test
+*.py.swp
+*/python
