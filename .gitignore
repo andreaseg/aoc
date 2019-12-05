@@ -6,3 +6,7 @@
 *.test
 *.py.swp
 */python
+
+*.iml
+.idea/*
+target/*
